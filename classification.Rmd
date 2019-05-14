@@ -31,7 +31,7 @@ Note that the `echo = FALSE` parameter was added to the code chunk to prevent pr
 
 The following code will install packages used in the project.
 
-```{r}
+```{r packages, results="hide"}
 #list of packages used
 packages <- c("dplyr", "tidyr", "ggplot2", "class", "rpart", "rpart.plot", "neuralnet", "arules",
               "plyr", "mltools", "arulesViz", "plotly", "RCurl")
