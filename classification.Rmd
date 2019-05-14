@@ -50,8 +50,8 @@ Import the data from my github page and explore.
 
 ```{r}
 #import our county features dataset
-file <- "https://raw.githubusercontent.com/ianjeffries/election-predictions/master/Data/county_facts.csv"
-demographics <- read.csv(file, header=TRUE)
+path <- "https://raw.githubusercontent.com/ianjeffries/election-predictions/master/Data/county_facts.csv"
+demographics <- read.csv(path, header=TRUE)
 
 #See the structure of the dataset
 names(demographics)
@@ -61,4 +61,42 @@ str(demographics)
 #find the state summary info and remove (want only counties, this dataset includes state summaries)
 demographics <- demographics[-which(demographics$state_abbreviation == ""), ]
 head(demographics)
+```
+
+## Add in Dictionary information
+
+```{r}
+#pull in dictionary to get true names of the variables
+path <- "https://raw.githubusercontent.com/ianjeffries/election-predictions/master/Data/county_facts_dictionary.csv"
+var_names <- read.csv(path, header = TRUE)
+
+#view variable names
+print(var_names)
+```
+
+## Pull in Election Results and Clean the data
+
+```{r}
+#add in the election results
+path <- "https://raw.githubusercontent.com/ianjeffries/election-predictions/master/Data/pres16results.csv"
+election_results <- read.csv(path, header = TRUE)
+head(election_results)
+
+#drop columns we don't need
+election_results <- election_results[-c(2, 5, 8)]
+head(election_results)
+
+#filter by the republican and democrat candidates & remove null values
+ER_clean <- election_results %>%
+                      filter(cand %in% c("Donald Trump", "Hillary Clinton") & county != "<NA>")
+head(ER_clean)
+
+#change to wide dataset to merge our candidate information into the features document
+ER_clean <- spread(ER_clean, key = cand, value = votes)
+head(ER_clean)
+
+#add in % won by
+ER_clean$Percent_Rep <- round(ER_clean$`Donald Trump` / ER_clean$total_votes, 2)
+ER_clean$Percent_Dem <- round(ER_clean$`Hillary Clinton` / ER_clean$total_votes, 2)
+head(ER_clean)
 ```
