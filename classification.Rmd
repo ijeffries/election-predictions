@@ -1,0 +1,64 @@
+---
+title: "Predicting Election Results in the USA"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+## Install necessary packages
+
+The following code will install packages used in the project.
+
+```{r}
+#list of packages used
+packages <- c("dplyr", "tidyr", "ggplot2", "class", "rpart", "rpart.plot", "neuralnet", "arules",
+              "plyr", "mltools", "arulesViz", "plotly", "RCurl")
+
+#check to see if package is already installed, if not, install
+for(p in packages){
+  if(!require(p, character.only = TRUE)) {
+    install.packages(p)
+    library(p, character.only = TRUE)
+  } 
+}
+```
+## Explore the demographics dataset
+
+Import the data from my github page and explore.
+
+```{r}
+#import our county features dataset
+file <- "https://raw.githubusercontent.com/ianjeffries/election-predictions/master/Data/county_facts.csv"
+demographics <- read.csv(file, header=TRUE)
+
+#See the structure of the dataset
+names(demographics)
+head(demographics)
+str(demographics)
+
+#find the state summary info and remove (want only counties, this dataset includes state summaries)
+demographics <- demographics[-which(demographics$state_abbreviation == ""), ]
+head(demographics)
+```
