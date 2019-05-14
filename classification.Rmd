@@ -31,7 +31,7 @@ Note that the `echo = FALSE` parameter was added to the code chunk to prevent pr
 
 The following code will install packages used in the project.
 
-```{r packages, results="hide"}
+```{r packages, message=FALSE, warning=FALSE}
 #list of packages used
 packages <- c("dplyr", "tidyr", "ggplot2", "class", "rpart", "rpart.plot", "neuralnet", "arules",
               "plyr", "mltools", "arulesViz", "plotly", "RCurl")
@@ -48,24 +48,22 @@ for(p in packages){
 
 Import the data from my github page and explore.
 
-```{r}
+```{r demographics}
 #import our county features dataset
 path <- "https://raw.githubusercontent.com/ianjeffries/election-predictions/master/Data/county_facts.csv"
 demographics <- read.csv(path, header=TRUE)
 
 #See the structure of the dataset
 names(demographics)
-head(demographics)
 str(demographics)
 
 #find the state summary info and remove (want only counties, this dataset includes state summaries)
 demographics <- demographics[-which(demographics$state_abbreviation == ""), ]
-head(demographics)
 ```
 
 ## Add in Dictionary information
 
-```{r}
+```{r dictionary}
 #pull in dictionary to get true names of the variables
 path <- "https://raw.githubusercontent.com/ianjeffries/election-predictions/master/Data/county_facts_dictionary.csv"
 var_names <- read.csv(path, header = TRUE)
@@ -74,29 +72,180 @@ var_names <- read.csv(path, header = TRUE)
 print(var_names)
 ```
 
-## Pull in Election Results and Clean the data
+## Pull in 2016 Election Results and Clean the Data
 
-```{r}
+```{r 2016_Results}
 #add in the election results
 path <- "https://raw.githubusercontent.com/ianjeffries/election-predictions/master/Data/pres16results.csv"
 election_results <- read.csv(path, header = TRUE)
-head(election_results)
+names(election_results)
+str(election_results)
 
 #drop columns we don't need
 election_results <- election_results[-c(2, 5, 8)]
-head(election_results)
 
-#filter by the republican and democrat candidates & remove null values
+#filter by the republican and democratic candidates & remove null values
 ER_clean <- election_results %>%
                       filter(cand %in% c("Donald Trump", "Hillary Clinton") & county != "<NA>")
-head(ER_clean)
 
-#change to wide dataset to merge our candidate information into the features document
+#change to wide dataset to merge our candidate information with the demographics dataframe
 ER_clean <- spread(ER_clean, key = cand, value = votes)
-head(ER_clean)
 
 #add in % won by
 ER_clean$Percent_Rep <- round(ER_clean$`Donald Trump` / ER_clean$total_votes, 2)
 ER_clean$Percent_Dem <- round(ER_clean$`Hillary Clinton` / ER_clean$total_votes, 2)
-head(ER_clean)
+```
+
+## Join the Demographic and Election Results Datasets
+```{r Joined_Data, warning=FALSE}
+#join our election results in the demographics table
+final_dataset <- left_join(demographics, select(ER_clean, Percent_Dem, Percent_Rep, st, county), by = c("area_name" = "county", "state_abbreviation" = "st"))
+
+#find number of counties with N/A election results
+print(paste0("Number of counties with null election results: ", 
+             nrow(final_dataset[which(complete.cases(final_dataset) == FALSE), ])))
+
+#looks like these aren't counties (the majority) and the N is small enough I feel comfortable removing them
+final_dataset <- na.omit(final_dataset)
+```
+
+## Final Cleanup
+```{r cleanup}
+#change any column in dataset based on % of the population to true percentage (basically already normalized between 0 and 1)
+final_dataset[,c(8:24, 28:29, 35, 41:46)] <- final_dataset[,c(8:24, 28:29, 35, 41:46)] / 100
+
+#drop clearly irrelevant values
+final_dataset <- final_dataset[ , -c(5:8, 38)]
+
+#assign headers to something more understandable, based on the dictionary dataframe
+names(final_dataset) <- var_names$description[match(names(final_dataset), var_names$column_name)]
+
+#assign labels that weren't in the dictionary
+names(final_dataset[ , c(1, 2, 3, 50, 51)]) <- c("fips", "area_name", "state_abbreviation", "Percent_Dem", "Percent_Rep")
+
+#normalize any data not described as a %
+for (i in c(4, 21, 22, 23, 26, 27, 28, 29, 30, 32, 33, 34, 35, 42, 43, 44, 45, 46, 47, 48, 49)) {
+  final_dataset[,i] <- ((final_dataset[,i] - min(final_dataset[,i])) / 
+                          (max(final_dataset[,i]) - min(final_dataset[,i])) *
+                          (1 - 0) + 0)
+}
+
+#add in 1 or 0 if they voted democratic or republican
+final_dataset$Winner <- 0
+
+for (i in 1:nrow(final_dataset)) {
+    if (final_dataset[i, "percent_dem"] < .50) {
+      final_dataset[i, "Winner"] <- 0 
+      } else {
+        final_dataset[i, "Winner"] <- 1 
+      }}
+
+#set winner column to factor for classification
+final_dataset$Winner <- as.factor(final_dataset$Winner)
+```
+
+## Look for Variables to use in Classification
+```{r relevant_variables, fig.height=10, fig.width=9.5}
+#create narrow dataset to understand relationship between attributes and voting preference
+final_narrow <- gather(final_dataset, key = demographic_measure, value = stat, 4:49)
+
+#create side by side scatterplots to look for possible correlations
+ggplot(final_narrow, aes(x = percent_dem, y = stat)) +
+  geom_point(alpha = .5) +
+  geom_smooth() +
+  facet_wrap(vars(demographic_measure), ncol = 5) +
+  theme(strip.text = element_text(size = 5, face = "bold"))
+
+#remove columns that don't seem to have a correlation to voting preference
+final_dataset <- final_dataset[ , -c(1,5,7,10,12,13,16,28,30,34,35,37,39,42,43,44,45,47,48)]
+```
+
+## Classification Prep Work
+```{r prep_work}
+###### CREATE TRAINING AND TEST DATASETS ###### 
+
+#take only the predictor values and class from our dataset
+e_predictions <- final_dataset[ , c(3:30, 33)]
+
+#set set to make our test data reproducable
+set.seed(111692)
+
+#get 80/20 sample of data
+dist <- sample(2, size = nrow(e_predictions), replace = TRUE, prob = c(.8, .2))
+
+#set test and training data
+e_training <- e_predictions[dist == 1, ]
+e_test <- e_predictions[dist == 2, ]
+
+#show dimensions of training dataset
+dim(e_training)
+
+#show dimensions of test dataset
+dim(e_test)
+
+#create accuracy table for comparison
+algorithm_results <- matrix(data = rep(0, 6), nrow = 2, ncol = 3, 
+                            dimnames = list(c("Accuracy %:", "Precision %:"), c("KNN", "DTREE", "ANN")))
+
+#show accuracy table
+print(algorithm_results)
+```
+
+#K-Nearest Neighbor Classification
+```{r}
+###### KNN CLASSIFICATION ######
+
+#create KNN accuracy matrix to compare 15 K-Values
+KNN_accuracy <- matrix(data= rep(0, 45), ncol = 3, dimnames = list(c(1:15), c("K_Value", "Accuracy", "Precision")))
+
+#set each K value as a factor
+KNN_accuracy[ , 1] <- as.factor(c(1:15))
+
+#test multiple K values and store the results 
+#(For KNN function, you need to remove the columns with actual classification)
+for (i in 1:15) {
+  KNN_results <- as.data.frame(knn(e_training[,1:28], e_test[,1:28], e_training$Winner, 
+                                 k = i, prob = TRUE))
+ 
+  #create a comparison table
+  KNN_table <- table(KNN_results[,1], e_test$Winner)
+
+  print(KNN_table)
+  
+  #find % accuracy
+  KNN_accuracy[i , 2] <- round(((sum(diag(KNN_table)) / sum(KNN_table)) * 100), 2)
+  
+  #find % precision
+  KNN_accuracy[i , 3] <- round((KNN_table[2, 2] / (KNN_table[2, 2] + KNN_table[2, 1]) * 100), 2)
+}
+
+print(KNN_accuracy)
+
+#plot the results
+theme_update(plot.title = element_text(hjust = 0.5))
+ggplot(as.data.frame(KNN_accuracy), aes(x = K_Value, y = Accuracy)) +
+  geom_bar(stat = "identity", fill = "black") +
+  ggtitle("K Value Accuracy Comparision") +
+  scale_x_continuous(breaks = c(1:15)) +
+  scale_y_continuous(limits = c(0, 100)) +
+  geom_bar(data=subset(as.data.frame(KNN_accuracy), Accuracy==max(Accuracy)), aes(K_Value, Accuracy),
+           fill="green", stat="identity")
+
+#plot precision
+ggplot(as.data.frame(KNN_accuracy), aes(x = K_Value, y = Precision)) +
+  geom_bar(stat = "identity", fill = "black") +
+  ggtitle("K Value Precision Comparision") +
+  scale_x_continuous(breaks = c(1:15)) +
+  scale_y_continuous(limits = c(0, 100)) +
+  geom_bar(data=subset(as.data.frame(KNN_accuracy), Precision==max(Precision)), aes(K_Value, Precision),
+           fill="green", stat="identity")
+
+#add to results table
+algorithm_results[1:2, 1] <- KNN_accuracy[12, 2:3]
+algorithm_results
+```
+
+
+
+```{r}
 ```
