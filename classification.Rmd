@@ -62,7 +62,8 @@ print(var_names)
 
 ## Pull in 2016 Election Results and Clean the Data
 
-As of now, the US primarily operates in a two-party system. Because of this, only the democratic and republican candidates are of interest. 
+As of now, the US primarily operates in a two-party system. Because of this, only the 
+democratic and republican candidates are of interest. 
 
 ```{r 2016_Results}
 #add in the election results
@@ -109,7 +110,8 @@ final_dataset <- na.omit(final_dataset)
 
 ## Final Cleanup
 
-The final cleanup steps are to remove irrelevant values and reassign column names for analysis. The data will also be normalized, with 0 or 1 values assigned to the target variable.
+The final cleanup steps are to remove irrelevant values and reassign column names for analysis. 
+The data will also be normalized, with 0 or 1 values assigned to the target variable.
 
 ```{r cleanup}
 #change any column in dataset based on % of the population to true percentage 
@@ -149,7 +151,9 @@ final_dataset$Winner <- as.factor(final_dataset$Winner)
 
 ## Look for Variables to use in Classification
 
-Rather than use all 45 variables in classification, each normalized variable was graphed against the percentage vote for the democratic candidate to see if there are any clear correlations. Any variables that didn't seem to hold a correlation were removed. 
+Rather than use all 45 variables in classification, each normalized variable was graphed against the percentage 
+vote for the democratic candidate to see if there are any clear correlations. Any variables that didn't seem to 
+hold a correlation were removed. 
 
 ```{r relevant_variables, fig.height=10, fig.width=9.5}
 #create narrow dataset to understand relationship between attributes and voting preference
@@ -168,7 +172,8 @@ final_dataset <- final_dataset[ , -c(1,5,7,10,12,13,16,28,30,34,35,37,39,42,43,4
 
 ## Classification Prep Work
 
-Before the models can be created, training and test datasets must be set up. An accuracy matrix was also created to house the results from each model. 
+Before the models can be created, training and test datasets must be set up. An accuracy matrix was 
+also created to house the results from each model. 
 
 ```{r prep_work}
 ###### CREATE TRAINING AND TEST DATASETS ###### 
@@ -434,4 +439,5 @@ final_narrow2 %>%
 
 ## Conclusion
 
-In conclusion, KNN was the best performing model to use when predicting election results by county. A full write-up of the results can be found on Ian Jeffries' github page. 
+In conclusion, KNN was the best performing model to use when predicting election results by county. 
+A full write-up of the results can be found on Ian Jeffries' github page. 
