@@ -1,5 +1,5 @@
 ---
-title: "Predicting Election Results in the USA"
+title: "Predicting 2016 Election Results in the USA"
 output: html_document
 ---
 
@@ -7,29 +7,11 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## R Markdown
-
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
-
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
-
-```{r cars}
-summary(cars)
-```
-
-## Including Plots
-
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
-```
-
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+The following R Markdown document outlines the steps used to predict the 2016 election results in the USA by county, based on the demographic variables of that county. This is a supervised classification problem, and three models were tested to predict the election outcome: K Nearest Neighbor, Artifical Neural Networks, and Decision Trees. 
 
 ## Install necessary packages
 
-The following code will install packages used in the project.
+The following code will install the packages used in the project:
 
 ```{r packages, message=FALSE, warning=FALSE}
 #list of packages used
@@ -44,7 +26,7 @@ for(p in packages){
   } 
 }
 ```
-## Explore the demographics dataset
+## Explore the Demographics Dataset
 
 Import the data from my github page and explore.
 
@@ -53,8 +35,9 @@ Import the data from my github page and explore.
 path <- "https://raw.githubusercontent.com/ianjeffries/election-predictions/master/Data/county_facts.csv"
 demographics <- read.csv(path, header=TRUE)
 
-#See the structure of the dataset
+#See the names of the columns
 names(demographics)
+#See the structure of the dataset
 str(demographics)
 
 #find the state summary info and remove (want only counties, this dataset includes state summaries)
@@ -62,6 +45,8 @@ demographics <- demographics[-which(demographics$state_abbreviation == ""), ]
 ```
 
 ## Add in Dictionary information
+
+Add in the dictionary file to replace columm headers with readable values. 
 
 ```{r dictionary}
 #pull in dictionary to get true names of the variables
@@ -74,11 +59,17 @@ print(var_names)
 
 ## Pull in 2016 Election Results and Clean the Data
 
+As of now, the US primarily operates in a two-party system. Because of this, only the democratic and republican candidates are of interest. 
+
 ```{r 2016_Results}
 #add in the election results
 path <- "https://raw.githubusercontent.com/ianjeffries/election-predictions/master/Data/pres16results.csv"
 election_results <- read.csv(path, header = TRUE)
+
+#see the names of the columns
 names(election_results)
+
+#see structure of the dataset
 str(election_results)
 
 #drop columns we don't need
@@ -88,7 +79,7 @@ election_results <- election_results[-c(2, 5, 8)]
 ER_clean <- election_results %>%
                       filter(cand %in% c("Donald Trump", "Hillary Clinton") & county != "<NA>")
 
-#change to wide dataset to merge our candidate information with the demographics dataframe
+#change to wide dataset to merge the election results with the demographics dataframe
 ER_clean <- spread(ER_clean, key = cand, value = votes)
 
 #add in % won by
@@ -97,9 +88,13 @@ ER_clean$Percent_Dem <- round(ER_clean$`Hillary Clinton` / ER_clean$total_votes,
 ```
 
 ## Join the Demographic and Election Results Datasets
+
+Now that cleanup is complete, the two datasets can be joined. 
+
 ```{r Joined_Data, warning=FALSE}
-#join our election results in the demographics table
-final_dataset <- left_join(demographics, select(ER_clean, Percent_Dem, Percent_Rep, st, county), by = c("area_name" = "county", "state_abbreviation" = "st"))
+#join our election results with the demographics table
+final_dataset <- left_join(demographics, select(ER_clean, Percent_Dem, Percent_Rep, st, county), 
+                           by = c("area_name" = "county", "state_abbreviation" = "st"))
 
 #find number of counties with N/A election results
 print(paste0("Number of counties with null election results: ", 
@@ -110,6 +105,9 @@ final_dataset <- na.omit(final_dataset)
 ```
 
 ## Final Cleanup
+
+The final cleanup steps are to remove irrelevant values and reassign column names for analysis. The data will also be normalized, with 0 or 1 values assigned to the target variable.
+
 ```{r cleanup}
 #change any column in dataset based on % of the population to true percentage (basically already normalized between 0 and 1)
 final_dataset[,c(8:24, 28:29, 35, 41:46)] <- final_dataset[,c(8:24, 28:29, 35, 41:46)] / 100
@@ -145,6 +143,9 @@ final_dataset$Winner <- as.factor(final_dataset$Winner)
 ```
 
 ## Look for Variables to use in Classification
+
+Rather than use all 45 variables in classification, each normalized variable was graphed against the percentage vote for the democratic candidate to see if there are any clear correlations. Any variables that didn't seem to hold a correlation were removed. 
+
 ```{r relevant_variables, fig.height=10, fig.width=9.5}
 #create narrow dataset to understand relationship between attributes and voting preference
 final_narrow <- gather(final_dataset, key = demographic_measure, value = stat, 4:49)
@@ -161,6 +162,9 @@ final_dataset <- final_dataset[ , -c(1,5,7,10,12,13,16,28,30,34,35,37,39,42,43,4
 ```
 
 ## Classification Prep Work
+
+Before the models can be created, training and test datasets must be set up. An accuracy matrix was also created to house the results from each model. 
+
 ```{r prep_work}
 ###### CREATE TRAINING AND TEST DATASETS ###### 
 
@@ -191,7 +195,7 @@ algorithm_results <- matrix(data = rep(0, 6), nrow = 2, ncol = 3,
 print(algorithm_results)
 ```
 
-#K-Nearest Neighbor Classification
+## K-Nearest Neighbor Classification
 ```{r knn}
 ###### KNN CLASSIFICATION ######
 
@@ -209,8 +213,6 @@ for (i in 1:15) {
  
   #create a comparison table
   KNN_table <- table(KNN_results[,1], e_test$Winner)
-
-  print(KNN_table)
   
   #find % accuracy
   KNN_accuracy[i , 2] <- round(((sum(diag(KNN_table)) / sum(KNN_table)) * 100), 2)
@@ -219,9 +221,7 @@ for (i in 1:15) {
   KNN_accuracy[i , 3] <- round((KNN_table[2, 2] / (KNN_table[2, 2] + KNN_table[2, 1]) * 100), 2)
 }
 
-print(KNN_accuracy)
-
-#plot the results
+#plot accuracy results
 theme_update(plot.title = element_text(hjust = 0.5))
 ggplot(as.data.frame(KNN_accuracy), aes(x = K_Value, y = Accuracy)) +
   geom_bar(stat = "identity", fill = "black") +
@@ -231,7 +231,7 @@ ggplot(as.data.frame(KNN_accuracy), aes(x = K_Value, y = Accuracy)) +
   geom_bar(data=subset(as.data.frame(KNN_accuracy), Accuracy==max(Accuracy)), aes(K_Value, Accuracy),
            fill="green", stat="identity")
 
-#plot precision
+#plot precision results
 ggplot(as.data.frame(KNN_accuracy), aes(x = K_Value, y = Precision)) +
   geom_bar(stat = "identity", fill = "black") +
   ggtitle("K Value Precision Comparision") +
@@ -240,20 +240,19 @@ ggplot(as.data.frame(KNN_accuracy), aes(x = K_Value, y = Precision)) +
   geom_bar(data=subset(as.data.frame(KNN_accuracy), Precision==max(Precision)), aes(K_Value, Precision),
            fill="green", stat="identity")
 
-#add to results table
+#add to results table (highest k value at the time I ran)
 algorithm_results[1:2, 1] <- KNN_accuracy[12, 2:3]
 algorithm_results
 ```
 
 ## Decision Tree
-```{r dtree}
+```{r dtree, fig.height=5, fig.width=9}
 ###### DECISION TREE CLASSIFICATION ######
 
 #Train the decision tree
 e_tree <- rpart(Winner ~ ., data = e_training)
-e_tree
 
-#plot the branches of the tree (5 different versions, run one at a time)
+#plot the branches of the tree 
 rpart.plot(e_tree, type=1)
 
 #returns a list of strings summarizing the branch path to each node
@@ -276,7 +275,6 @@ tree_accuracy[1 , 2] <- round((tree_table[2, 2] / (tree_table[2, 2] + tree_table
 
 #add to results table
 algorithm_results[1:2, 2] <- tree_accuracy
-print(algorithm_results)
 ```
 
 ## Neural Networks
@@ -292,18 +290,14 @@ print(algorithm_results)
 #first move categorical variables into their own columns
 #(I believe this formula finds columns that are categorical classes)
 e_training_m <- model.matrix(~0 + ., data = e_training)
-head(e_training_m)
 
 #do the same for the test dataset
 e_test_m <- model.matrix(~0 + ., data = e_test)
-head(e_test_m)
 
 #create an accuracy table
 ANN_accuracy <- matrix(data= rep(0, 39), ncol = 3, dimnames = list(c(3:15), c("Nodes", "Accuracy", "Precision")))
-head(ANN_accuracy)
 
 ANN_accuracy[ , 1] <- c(3:15)
-ANN_accuracy
 
 #test multiple hidden nodes in our model
 for (i in 3:15) {
@@ -326,27 +320,20 @@ for (i in 3:15) {
                          linear.output = FALSE,
                          threshold = .1)
   
-  #plot algorithm
-  #plot(e_network, rep = "best") #error = mean squade error
-  
   #test the ANN on the test data
   ANN_results <- compute(e_network, e_test_m[ ,1:28]) #computes result of each row, remove winner variables
 
   #extract the results
   prediction <- ANN_results$net.result
-  head(prediction)
   
   #use max.col function to pull the original values from our test dataset into one column
   original_values <- max.col(e_test_m[ ,29:30]) - 1
-  original_values
   
   #use max.col function to get prediction values
   prediction_values <- max.col(prediction) - 1
-  prediction_values
   
   #create a dataframe with both values
   results <- data.frame(actual = original_values, prediction = prediction_values)
-  results
   
   #create a comparison table
   ANN_table <- table(results$prediction, e_test$Winner)
@@ -380,6 +367,61 @@ ggplot(as.data.frame(ANN_accuracy), aes(x = Nodes, y = Precision)) +
 algorithm_results[1:2, 3] <- ANN_accuracy[1, 2:3]
 print(algorithm_results)
 ```
+## Model Comparison
+```{r comparison, fig.height=4, fig.width=6}
+###### COMPARISON OF CLASSIFICATION MODELS ######
 
-```{r}
+#create final results (results kept changing as I used different work stations, 
+#using values from last test for the write up)
+final_results <- matrix(data= rep(0, 18), ncol = 3, dimnames = list(c(1:6), c("Model", "Measure", "Percentage")))
+final_results <- as.data.frame(final_results)
+
+#add results manually 
+final_results$Model <- c("KNN", "DTREE", "ANN", "KNN", "DTREE", "ANN")
+final_results$Measure <- c("Accuracy", "Accuracy", "Accuracy", "Precision", "Precision", "Precision")
+final_results$Percentage <- c(94.97, 93.79, 94.23, 91.78, 79.12, 88.31)
+
+#plot the accuracy results
+ggplot(final_results, aes(x = Model, y = Percentage, fill = Measure)) +
+  geom_bar(stat = "identity", position = position_dodge(width = .6), alpha = .8) +
+  ggtitle("R Model Comparison") +
+  scale_y_continuous(limits = c(0, 100)) + 
+  geom_hline(yintercept = 94.97, linetype = "dashed", size = 1, color = "#E54445") + 
+  geom_hline(yintercept = 91.78, linetype = "dashed", size = 1, color = "#5B94C2") +
+  scale_fill_brewer(palette = "Set1")
+
+#make narrow dataset even more narrow to plot by party
+final_narrow2 <- gather(final_narrow, key = party, value = percent, 4:5)
+
+#plot vote by population (to see if high populations vote democratic)
+final_narrow2 %>%
+  filter(demographic_measure == "Population_2014",
+         party == "percent_dem") %>%
+  ggplot(aes(x = percent, y = stat)) +
+  geom_point(color = "#5B94C2") +
+  geom_smooth() +
+  xlab("Percent Voted Democratic") +
+  ylab("Population Size (Normalized)") +
+  ggtitle("Population by Percent Voted Democratic")
+
+#plot top demographics
+final_narrow2 %>%
+  filter(demographic_measure == "Percent_White_Alone_not_Hispanic_or_Latino" |
+         demographic_measure == "Percent_Black_or_African_American" |
+         demographic_measure == "Housing_units_in_multi_unit_structures" |
+         demographic_measure == "Per_capita_money_income_in_past_12_months" |
+         demographic_measure == "Median_value_of_owner_occupied_housing_units") %>%
+  ggplot(aes(x = percent, y = stat, color = party)) +
+  geom_smooth() +
+  facet_wrap(~demographic_measure, ncol = 2) +
+  ggtitle("Voting Trends by Top Demographics") +
+  xlab("Percent of Vote") +
+  ylab("Normalized Demographic Value") +
+  theme(strip.text = element_text(size=11), legend.position = c(0.75, 0.15)) + 
+  scale_colour_manual(labels = c("Democrat", "Republican"), values = c("#5B94C2", "#E54445")) +
+  scale_x_continuous(limits = c(0, 1), breaks = c(0, 0.25, 0.5, 0.75, 1)) +
+  scale_y_continuous(limits = c(0, 1), breaks = c(0, 0.25, 0.5, 0.75, 1))
 ```
+## Conclusion
+
+In conclusion, KNN was the best model to use when predicting election results by county. A full write-up of the results can be found on my github page. 
