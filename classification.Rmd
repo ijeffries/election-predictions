@@ -196,7 +196,7 @@ print(algorithm_results)
 ```
 
 ## K-Nearest Neighbor Classification
-```{r knn}
+```{r knn, fig.height=3, fig.width=5}
 ###### KNN CLASSIFICATION ######
 
 #create KNN accuracy matrix to compare 15 K-Values
@@ -242,11 +242,10 @@ ggplot(as.data.frame(KNN_accuracy), aes(x = K_Value, y = Precision)) +
 
 #add to results table (highest k value at the time I ran)
 algorithm_results[1:2, 1] <- KNN_accuracy[12, 2:3]
-algorithm_results
 ```
 
 ## Decision Tree
-```{r dtree, fig.height=5, fig.width=9}
+```{r dtree, fig.height=7, fig.width=9.5}
 ###### DECISION TREE CLASSIFICATION ######
 
 #Train the decision tree
@@ -368,7 +367,7 @@ algorithm_results[1:2, 3] <- ANN_accuracy[1, 2:3]
 print(algorithm_results)
 ```
 ## Model Comparison
-```{r comparison, fig.height=4, fig.width=6}
+```{r comparison, fig.height=4, fig.width=8}
 ###### COMPARISON OF CLASSIFICATION MODELS ######
 
 #create final results (results kept changing as I used different work stations, 
@@ -422,6 +421,7 @@ final_narrow2 %>%
   scale_x_continuous(limits = c(0, 1), breaks = c(0, 0.25, 0.5, 0.75, 1)) +
   scale_y_continuous(limits = c(0, 1), breaks = c(0, 0.25, 0.5, 0.75, 1))
 ```
+
 ## Conclusion
 
 In conclusion, KNN was the best model to use when predicting election results by county. A full write-up of the results can be found on my github page. 
