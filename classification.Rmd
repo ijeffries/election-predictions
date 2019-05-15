@@ -192,7 +192,7 @@ print(algorithm_results)
 ```
 
 #K-Nearest Neighbor Classification
-```{r}
+```{r knn}
 ###### KNN CLASSIFICATION ######
 
 #create KNN accuracy matrix to compare 15 K-Values
@@ -245,7 +245,141 @@ algorithm_results[1:2, 1] <- KNN_accuracy[12, 2:3]
 algorithm_results
 ```
 
+## Decision Tree
+```{r dtree}
+###### DECISION TREE CLASSIFICATION ######
 
+#Train the decision tree
+e_tree <- rpart(Winner ~ ., data = e_training)
+e_tree
+
+#plot the branches of the tree (5 different versions, run one at a time)
+rpart.plot(e_tree, type=1)
+
+#returns a list of strings summarizing the branch path to each node
+rpart.rules(e_tree, style = "tall") #useful to see what conditions predict a certain factor
+
+#predict using that model on test data
+tree_results <- as.data.frame(predict(e_tree, newdata = e_test, type = "class"))
+
+#create a comparison table
+tree_table <- table(tree_results[ , 1], e_test$Winner)
+
+#create an accuracy table
+tree_accuracy <- matrix(data= rep(0, 2), ncol = 2, dimnames = list("%",c("Accuracy", "Precision")))
+
+#find accuracy
+tree_accuracy[1, 1] <- round(((sum(diag(tree_table)) / sum(tree_table)) * 100), 2)
+
+#find % precision
+tree_accuracy[1 , 2] <- round((tree_table[2, 2] / (tree_table[2, 2] + tree_table[2, 1]) * 100), 2)
+
+#add to results table
+algorithm_results[1:2, 2] <- tree_accuracy
+print(algorithm_results)
+```
+
+## Neural Networks
+
+```{r neural-net}
+###### ANN CLASSIFICATION ######
+
+#build the neural network 
+
+#neural networks do not work for categorical variables (ie 1, 2 or 3 ranking) To get around this we put each
+#variable in it's own column, either a 1 or 0 for columns 1, 2 or 3 (use the model.matrix function to do this)
+
+#first move categorical variables into their own columns
+#(I believe this formula finds columns that are categorical classes)
+e_training_m <- model.matrix(~0 + ., data = e_training)
+head(e_training_m)
+
+#do the same for the test dataset
+e_test_m <- model.matrix(~0 + ., data = e_test)
+head(e_test_m)
+
+#create an accuracy table
+ANN_accuracy <- matrix(data= rep(0, 39), ncol = 3, dimnames = list(c(3:15), c("Nodes", "Accuracy", "Precision")))
+head(ANN_accuracy)
+
+ANN_accuracy[ , 1] <- c(3:15)
+ANN_accuracy
+
+#test multiple hidden nodes in our model
+for (i in 3:15) {
+
+  #build the artifical neural network using neuralnet function
+  e_network <- neuralnet(Winner0 + Winner1 ~ Population_2014 + Percent_65_Years_and_Older + Percent_White_Alone + 
+                           Percent_Black_or_African_American + Percent_Asian + Percent_Hispanic_or_Latino + 
+                           Percent_White_Alone_not_Hispanic_or_Latino + Percent_Foreign_born_persons + 
+                           Percent_Language_other_than_English_spoken_at_home + Percent_High_school_graduate_or_higher + 
+                           Percent_Bachelors_degree_or_higher + Percent_Veterans + Mean_travel_time_to_work_minutes + 
+                           Housing_units + Percent_Homeownership_rate + Housing_units_in_multi_unit_structures + 
+                           Median_value_of_owner_occupied_housing_units + Number_Households + 
+                           Per_capita_money_income_in_past_12_months + Percent_Persons_below_poverty_level + 
+                           Private_nonfarm_establishments + Private_nonfarm_employment + Percent_Black_owned_firms + 
+                           Percent_Asian_owned_firms + Percent_Hispanic_owned_firms + Percent_Women_owned_firms + 
+                           Accommodation_and_food_services_sales_2007_1000 + Population_per_square_mile,
+                         data = e_training_m,
+                         hidden = i,
+                         lifesign = "full",
+                         linear.output = FALSE,
+                         threshold = .1)
+  
+  #plot algorithm
+  #plot(e_network, rep = "best") #error = mean squade error
+  
+  #test the ANN on the test data
+  ANN_results <- compute(e_network, e_test_m[ ,1:28]) #computes result of each row, remove winner variables
+
+  #extract the results
+  prediction <- ANN_results$net.result
+  head(prediction)
+  
+  #use max.col function to pull the original values from our test dataset into one column
+  original_values <- max.col(e_test_m[ ,29:30]) - 1
+  original_values
+  
+  #use max.col function to get prediction values
+  prediction_values <- max.col(prediction) - 1
+  prediction_values
+  
+  #create a dataframe with both values
+  results <- data.frame(actual = original_values, prediction = prediction_values)
+  results
+  
+  #create a comparison table
+  ANN_table <- table(results$prediction, e_test$Winner)
+  
+  #find accuracy
+  ANN_accuracy[i-2, 2] <- round(((sum(diag(ANN_table)) / sum(ANN_table)) * 100), 2)
+  
+  #find % precision
+  ANN_accuracy[i-2 , 3] <- round((ANN_table[2, 2] / (ANN_table[2, 2] + ANN_table[2, 1]) * 100), 2)
+}
+
+#plot the accuracy results
+ggplot(as.data.frame(ANN_accuracy), aes(x = Nodes, y = Accuracy)) +
+  geom_bar(stat = "identity", fill = "black") +
+  ggtitle("Hidden Node Accuracy Comparision") +
+  scale_x_continuous(breaks = c(3:15)) +
+  scale_y_continuous(limits = c(0, 100)) +
+  geom_bar(data=subset(as.data.frame(ANN_accuracy), Accuracy==max(Accuracy)), aes(Nodes, Accuracy),
+           fill="green", stat="identity")
+
+#plot the precision results
+ggplot(as.data.frame(ANN_accuracy), aes(x = Nodes, y = Precision)) +
+  geom_bar(stat = "identity", fill = "black") +
+  ggtitle("Hidden Node Precision Comparision") +
+  scale_x_continuous(breaks = c(3:15)) +
+  scale_y_continuous(limits = c(0, 100)) +
+  geom_bar(data=subset(as.data.frame(ANN_accuracy), Precision==max(Precision)), aes(Nodes, Precision),
+           fill="green", stat="identity")
+
+#add to results table
+algorithm_results[1:2, 3] <- ANN_accuracy[1, 2:3]
+print(algorithm_results)
+```
 
 ```{r}
 ```
