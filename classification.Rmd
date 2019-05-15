@@ -7,7 +7,10 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-The following R Markdown document outlines the steps used to predict the 2016 election results in the USA by county, based on the demographic variables of that county. This is a supervised classification problem, and three models were tested to predict the election outcome: K Nearest Neighbor, Artifical Neural Networks, and Decision Trees. 
+The following R Markdown outlines the steps used by Ian Jeffries to predict the 2016 election results in the USA 
+by county, based on the demographics of that county. This is a supervised machine learning classification problem, 
+and three models were tested to predict the election outcome: K Nearest Neighbor, Artifical Neural Networks, and
+Decision Trees. 
 
 ## Install necessary packages
 
@@ -109,7 +112,8 @@ final_dataset <- na.omit(final_dataset)
 The final cleanup steps are to remove irrelevant values and reassign column names for analysis. The data will also be normalized, with 0 or 1 values assigned to the target variable.
 
 ```{r cleanup}
-#change any column in dataset based on % of the population to true percentage (basically already normalized between 0 and 1)
+#change any column in dataset based on % of the population to true percentage 
+#(basically already normalized between 0 and 1)
 final_dataset[,c(8:24, 28:29, 35, 41:46)] <- final_dataset[,c(8:24, 28:29, 35, 41:46)] / 100
 
 #drop clearly irrelevant values
@@ -119,7 +123,8 @@ final_dataset <- final_dataset[ , -c(5:8, 38)]
 names(final_dataset) <- var_names$description[match(names(final_dataset), var_names$column_name)]
 
 #assign labels that weren't in the dictionary
-names(final_dataset[ , c(1, 2, 3, 50, 51)]) <- c("fips", "area_name", "state_abbreviation", "Percent_Dem", "Percent_Rep")
+names(final_dataset[ , c(1, 2, 3, 50, 51)]) <- c("fips", "area_name", "state_abbreviation", "Percent_Dem",
+                                                 "Percent_Rep")
 
 #normalize any data not described as a %
 for (i in c(4, 21, 22, 23, 26, 27, 28, 29, 30, 32, 33, 34, 35, 42, 43, 44, 45, 46, 47, 48, 49)) {
@@ -196,11 +201,12 @@ print(algorithm_results)
 ```
 
 ## K-Nearest Neighbor Classification
-```{r knn, fig.height=3, fig.width=5}
+```{r knn, fig.height=3.5, fig.width=5}
 ###### KNN CLASSIFICATION ######
 
 #create KNN accuracy matrix to compare 15 K-Values
-KNN_accuracy <- matrix(data= rep(0, 45), ncol = 3, dimnames = list(c(1:15), c("K_Value", "Accuracy", "Precision")))
+KNN_accuracy <- matrix(data= rep(0, 45), ncol = 3, dimnames = list(c(1:15), c("K_Value", "Accuracy", 
+                                                                              "Precision")))
 
 #set each K value as a factor
 KNN_accuracy[ , 1] <- as.factor(c(1:15))
@@ -278,7 +284,7 @@ algorithm_results[1:2, 2] <- tree_accuracy
 
 ## Neural Networks
 
-```{r neural-net}
+```{r neural-net, fig.height=3.5, fig.width=5, message=FALSE}
 ###### ANN CLASSIFICATION ######
 
 #build the neural network 
@@ -294,7 +300,8 @@ e_training_m <- model.matrix(~0 + ., data = e_training)
 e_test_m <- model.matrix(~0 + ., data = e_test)
 
 #create an accuracy table
-ANN_accuracy <- matrix(data= rep(0, 39), ncol = 3, dimnames = list(c(3:15), c("Nodes", "Accuracy", "Precision")))
+ANN_accuracy <- matrix(data= rep(0, 39), ncol = 3, dimnames = list(c(3:15), c("Nodes", "Accuracy", 
+                                                                              "Precision")))
 
 ANN_accuracy[ , 1] <- c(3:15)
 
@@ -302,16 +309,18 @@ ANN_accuracy[ , 1] <- c(3:15)
 for (i in 3:15) {
 
   #build the artifical neural network using neuralnet function
-  e_network <- neuralnet(Winner0 + Winner1 ~ Population_2014 + Percent_65_Years_and_Older + Percent_White_Alone + 
-                           Percent_Black_or_African_American + Percent_Asian + Percent_Hispanic_or_Latino + 
-                           Percent_White_Alone_not_Hispanic_or_Latino + Percent_Foreign_born_persons + 
-                           Percent_Language_other_than_English_spoken_at_home + Percent_High_school_graduate_or_higher + 
-                           Percent_Bachelors_degree_or_higher + Percent_Veterans + Mean_travel_time_to_work_minutes + 
-                           Housing_units + Percent_Homeownership_rate + Housing_units_in_multi_unit_structures + 
+  e_network <- neuralnet(Winner0 + Winner1 ~ Population_2014 + Percent_65_Years_and_Older + 
+                           Percent_White_Alone + Percent_Black_or_African_American + Percent_Asian +
+                           Percent_Hispanic_or_Latino + Percent_White_Alone_not_Hispanic_or_Latino +
+                           Percent_Foreign_born_persons + Percent_Language_other_than_English_spoken_at_home +
+                           Percent_High_school_graduate_or_higher + Percent_Bachelors_degree_or_higher +
+                           Percent_Veterans + Mean_travel_time_to_work_minutes + Housing_units +
+                           Percent_Homeownership_rate + Housing_units_in_multi_unit_structures + 
                            Median_value_of_owner_occupied_housing_units + Number_Households + 
                            Per_capita_money_income_in_past_12_months + Percent_Persons_below_poverty_level + 
-                           Private_nonfarm_establishments + Private_nonfarm_employment + Percent_Black_owned_firms + 
-                           Percent_Asian_owned_firms + Percent_Hispanic_owned_firms + Percent_Women_owned_firms + 
+                           Private_nonfarm_establishments + Private_nonfarm_employment + 
+                           Percent_Black_owned_firms + Percent_Asian_owned_firms + 
+                           Percent_Hispanic_owned_firms + Percent_Women_owned_firms + 
                            Accommodation_and_food_services_sales_2007_1000 + Population_per_square_mile,
                          data = e_training_m,
                          hidden = i,
@@ -367,12 +376,13 @@ algorithm_results[1:2, 3] <- ANN_accuracy[1, 2:3]
 print(algorithm_results)
 ```
 ## Model Comparison
-```{r comparison, fig.height=4, fig.width=8}
+```{r comparison, fig.height=5, fig.width=8}
 ###### COMPARISON OF CLASSIFICATION MODELS ######
 
 #create final results (results kept changing as I used different work stations, 
-#using values from last test for the write up)
-final_results <- matrix(data= rep(0, 18), ncol = 3, dimnames = list(c(1:6), c("Model", "Measure", "Percentage")))
+#                       using values from last test for the write up)
+final_results <- matrix(data= rep(0, 18), ncol = 3, dimnames = list(c(1:6), c("Model", "Measure", 
+                                                                              "Percentage")))
 final_results <- as.data.frame(final_results)
 
 #add results manually 
@@ -392,7 +402,7 @@ ggplot(final_results, aes(x = Model, y = Percentage, fill = Measure)) +
 #make narrow dataset even more narrow to plot by party
 final_narrow2 <- gather(final_narrow, key = party, value = percent, 4:5)
 
-#plot vote by population (to see if high populations vote democratic)
+#plot vote by population (to see if high populations voted democratic)
 final_narrow2 %>%
   filter(demographic_measure == "Population_2014",
          party == "percent_dem") %>%
@@ -424,4 +434,4 @@ final_narrow2 %>%
 
 ## Conclusion
 
-In conclusion, KNN was the best model to use when predicting election results by county. A full write-up of the results can be found on my github page. 
+In conclusion, KNN was the best performing model to use when predicting election results by county. A full write-up of the results can be found on Ian Jeffries' github page. 
