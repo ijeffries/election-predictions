@@ -1,0 +1,161 @@
+---
+title: "Mining Association Rules Relating to Demographics and Voting Preference"
+author: "Ian Jeffries"
+date: "5/16/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+The following R Markdown outlines the steps used by Ian Jeffries to predict the 2016 election results in the USA 
+by county, based on the demographics of that county. This is a supervised machine learning classification problem, 
+and three models were tested to predict the election outcome: K Nearest Neighbor, Artifical Neural Networks, and
+Decision Trees. 
+
+## Install necessary packages
+
+The following code will install the packages used in the project:
+
+```{r packages, message=FALSE, warning=FALSE}
+#list of packages used
+packages <- c("dplyr", "tidyr", "ggplot2", "class", "rpart", "rpart.plot", "neuralnet", "arules",
+              "plyr", "mltools", "arulesViz", "plotly", "RCurl")
+
+#check to see if package is already installed, if not, install
+for(p in packages){
+  if(!require(p, character.only = TRUE)) {
+    install.packages(p)
+    library(p, character.only = TRUE)
+  } 
+}
+```
+## Explore the Demographics Dataset
+
+Import the data from my github page and explore.
+
+```{r demographics}
+#import our county features dataset
+path <- "https://raw.githubusercontent.com/ianjeffries/election-predictions/master/data/county_facts.csv"
+demographics <- read.csv(path, header=TRUE)
+
+#See the names of the columns
+names(demographics)
+#See the structure of the dataset
+str(demographics)
+
+#find the state summary info and remove (want only counties, this dataset includes state summaries)
+demographics <- demographics[-which(demographics$state_abbreviation == ""), ]
+```
+
+## Add in Dictionary information
+
+Add in the dictionary file to replace columm headers with readable values. 
+
+```{r dictionary}
+#pull in dictionary to get true names of the variables
+path <- "https://raw.githubusercontent.com/ianjeffries/election-predictions/master/data/county_facts_dictionary.csv"
+var_names <- read.csv(path, header = TRUE)
+
+#view variable names
+print(var_names)
+```
+
+## Pull in 2016 Election Results and Clean the Data
+
+As of now, the US primarily operates in a two-party system. Because of this, only the 
+democratic and republican candidates are of interest. 
+
+```{r 2016_Results}
+#add in the election results
+path <- "https://raw.githubusercontent.com/ianjeffries/election-predictions/master/data/pres16results.csv"
+election_results <- read.csv(path, header = TRUE)
+
+#see the names of the columns
+names(election_results)
+
+#see structure of the dataset
+str(election_results)
+
+#drop columns we don't need
+election_results <- election_results[-c(2, 5, 8)]
+
+#filter by the republican and democratic candidates & remove null values
+ER_clean <- election_results %>%
+                      filter(cand %in% c("Donald Trump", "Hillary Clinton") & county != "<NA>")
+
+#change to wide dataset to merge the election results with the demographics dataframe
+ER_clean <- spread(ER_clean, key = cand, value = votes)
+
+#add in % won by
+ER_clean$Percent_Rep <- round(ER_clean$`Donald Trump` / ER_clean$total_votes, 2)
+ER_clean$Percent_Dem <- round(ER_clean$`Hillary Clinton` / ER_clean$total_votes, 2)
+```
+
+## Join the Demographic and Election Results Datasets
+
+Now that cleanup is complete, the two datasets can be joined. 
+
+```{r Joined_Data, warning=FALSE}
+#join our election results with the demographics table
+final_dataset <- left_join(demographics, select(ER_clean, Percent_Dem, Percent_Rep, st, county), 
+                           by = c("area_name" = "county", "state_abbreviation" = "st"))
+
+#find number of counties with N/A election results
+print(paste0("Number of counties with null election results: ", 
+             nrow(final_dataset[which(complete.cases(final_dataset) == FALSE), ])))
+
+#looks like these aren't counties (the majority) and the N is small enough I feel comfortable removing them
+final_dataset <- na.omit(final_dataset)
+```
+
+## Final Cleanup
+
+The final cleanup steps are to remove irrelevant values and reassign column names for analysis. 
+The data will also be normalized, with 0 or 1 values assigned to the target variable.
+
+```{r cleanup}
+#change any column in dataset based on % of the population to true percentage 
+#(basically already normalized between 0 and 1)
+final_dataset[,c(8:24, 28:29, 35, 41:46)] <- final_dataset[,c(8:24, 28:29, 35, 41:46)] / 100
+
+#drop clearly irrelevant values
+final_dataset <- final_dataset[ , -c(5:8, 38)]
+
+#assign headers to something more understandable, based on the dictionary dataframe
+names(final_dataset) <- var_names$description[match(names(final_dataset), var_names$column_name)]
+
+#assign labels that weren't in the dictionary
+names(final_dataset[ , c(1, 2, 3, 50, 51)]) <- c("fips", "area_name", "state_abbreviation", "Percent_Dem",
+                                                 "Percent_Rep")
+
+#normalize any data not described as a %
+for (i in c(4, 21, 22, 23, 26, 27, 28, 29, 30, 32, 33, 34, 35, 42, 43, 44, 45, 46, 47, 48, 49)) {
+  final_dataset[,i] <- ((final_dataset[,i] - min(final_dataset[,i])) / 
+                          (max(final_dataset[,i]) - min(final_dataset[,i])) *
+                          (1 - 0) + 0)
+}
+
+#add in 1 or 0 if they voted democratic or republican
+final_dataset$Winner <- 0
+
+for (i in 1:nrow(final_dataset)) {
+    if (final_dataset[i, "percent_dem"] < .50) {
+      final_dataset[i, "Winner"] <- 0 
+      } else {
+        final_dataset[i, "Winner"] <- 1 
+      }}
+
+#set winner column to factor for classification
+final_dataset$Winner <- as.factor(final_dataset$Winner)
+
+#remove columns that don't seem to have a correlation to voting preference
+final_dataset <- final_dataset[ , -c(1,5,7,10,12,13,16,28,30,34,35,37,39,42,43,44,45,47,48)]
+
+#create dataset for association rules
+association_data <- final_dataset[ , c(1:30,33)]
+
+#change winner to party name for readability
+association_data$Winner <- factor(association_data$Winner, labels = c("Republican", "Democrat"))
+```
