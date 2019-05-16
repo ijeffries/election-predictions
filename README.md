@@ -24,7 +24,7 @@ Three supervised machine learning models are used to predict election results ba
   b. county_facts_dictionary.csv - Dictionary to decode variable names in county_facts.csv  
   c. pres16results.csv - Results of the 2016 election by county
      
-2. [**images**](https://github.com/ianjeffries/election-predictions/tree/master/images) - Contains vizualizations:  
+2. [**images**](https://github.com/ianjeffries/election-predictions/tree/master/images) - contains vizualizations:  
   a. decision_tree.png - Decision tree created from modelling process  
   b. model_comparison.png - Comparison of 3 classification models used  
   c. population_trends.png - Population size by voting preference  
