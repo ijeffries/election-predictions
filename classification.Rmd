@@ -1,6 +1,10 @@
 ---
 title: "Predicting 2016 Election Results in the USA"
-output: html_document
+knit: (function(input_file, encoding) {
+  out_dir <- 'docs';
+  rmarkdown::render(input_file,
+ encoding=encoding,
+ output_file=file.path(dirname(input_file), out_dir, 'classification.html'))})
 ---
 
 ```{r setup, include=FALSE}
@@ -35,7 +39,7 @@ Import the data from my github page and explore.
 
 ```{r demographics}
 #import our county features dataset
-path <- "https://raw.githubusercontent.com/ianjeffries/election-predictions/master/Data/county_facts.csv"
+path <- "https://raw.githubusercontent.com/ianjeffries/election-predictions/master/data/county_facts.csv"
 demographics <- read.csv(path, header=TRUE)
 
 #See the names of the columns
@@ -53,7 +57,7 @@ Add in the dictionary file to replace columm headers with readable values.
 
 ```{r dictionary}
 #pull in dictionary to get true names of the variables
-path <- "https://raw.githubusercontent.com/ianjeffries/election-predictions/master/Data/county_facts_dictionary.csv"
+path <- "https://raw.githubusercontent.com/ianjeffries/election-predictions/master/data/county_facts_dictionary.csv"
 var_names <- read.csv(path, header = TRUE)
 
 #view variable names
@@ -67,7 +71,7 @@ democratic and republican candidates are of interest.
 
 ```{r 2016_Results}
 #add in the election results
-path <- "https://raw.githubusercontent.com/ianjeffries/election-predictions/master/Data/pres16results.csv"
+path <- "https://raw.githubusercontent.com/ianjeffries/election-predictions/master/data/pres16results.csv"
 election_results <- read.csv(path, header = TRUE)
 
 #see the names of the columns
