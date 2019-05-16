@@ -55,4 +55,9 @@ for(p in packages){
 
 1. Would like to thank Ben Hammer for the county_facts.csv and county_facts_dictionary.csv datasets, which were taken off [Kaggle](https://www.kaggle.com/benhamner/2016-us-election/home).
 2. Would like to thank Steve Palley for the pres16results.csv dataset, which was taken off [Kaggle](https://www.kaggle.com/stevepalley/2016uspresidentialvotebycounty/home).
+
+## License 
+
+MIT License
+Copyright (c) 2019 Ian Jeffries
   
