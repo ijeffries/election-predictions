@@ -12,9 +12,9 @@ Three supervised machine learning models are used to predict election results ba
 ## File Directory
 
   1. **Data** - contains three data sets used in analysis (taken from kaggle, referenced in the credits):  
-              a. county_facts.csv - Demographic breakdown of each county  
-              b. county_facts_dictionary.csv - Dictionary to decode variable names in County_facts.csv  
-              c. pres16results.csv - Results of the 2016 election by county
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;a. county_facts.csv - Demographic breakdown of each county  
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;b. county_facts_dictionary.csv - Dictionary to decode variable names in County_facts.csv  
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;c. pres16results.csv - Results of the 2016 election by county
   
   2. **classification.Rmd** - R Markdown detailing the entire classification process, from data cleaning to model creation. 
 
