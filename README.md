@@ -16,14 +16,41 @@ Three supervised machine learning models are used to predict election results ba
 
 ## File Directory
 
-1. [**Data**](https://github.com/ianjeffries/election-predictions/tree/master/data) - contains three data sets used in analysis (taken from kaggle, referenced in the credits):  
-     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;a. county_facts.csv - Demographic breakdown of each county  
-     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;b. county_facts_dictionary.csv - Dictionary to decode variable names in county_facts.csv  
-     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;c. pres16results.csv - Results of the 2016 election by county
+1. [**data**](https://github.com/ianjeffries/election-predictions/tree/master/data) - contains three data sets used in analysis (taken from kaggle, referenced in the credits):  
+  a. county_facts.csv - Demographic breakdown of each county  
+  b. county_facts_dictionary.csv - Dictionary to decode variable names in county_facts.csv  
+  c. pres16results.csv - Results of the 2016 election by county
+     
+2. [**images**](https://github.com/ianjeffries/election-predictions/tree/master/images) - Contains vizualizations:
+  a. decision_tree.png - Decision tree created from modelling process
+  b. model_comparison.png - Comparison of 3 classification models used
+  c. population_trends.png - Population size by voting preference 
+  d. voting_trends.png - Voting trends by top 5 normalized demographics
   
-2. [**classification.Rmd**](https://github.com/ianjeffries/election-predictions/blob/master/classification.Rmd) - R Markdown detailing the entire classification process, from data cleaning to model creation. 
+3. [**classification.Rmd**](https://github.com/ianjeffries/election-predictions/blob/master/classification.Rmd) - R Markdown detailing the entire classification process, from data cleaning to model creation. 
 
+## Language and Packages Used
 
+R is used for all model building - in the results R and SAS are compared.  
+
+The following packages are used:
   
-  
+  ```
+#list of packages used
+packages <- c("dplyr", "tidyr", "ggplot2", "class", "rpart", "rpart.plot", "neuralnet", "arules",
+              "plyr", "mltools", "arulesViz", "plotly", "RCurl")
+
+#check to see if package is already installed, if not, install
+for(p in packages){
+  if(!require(p, character.only = TRUE)) {
+    install.packages(p)
+    library(p, character.only = TRUE)
+  } 
+}
+```
+
+## Credits
+
+1. Would like to thank Ben Hammer for the county_facts.csv and county_facts_dictionary.csv datasets, which were taken off of [Kaggle](https://www.kaggle.com/benhamner/2016-us-election/home)
+2. Would like to thank Steve Palley for the pres16results.csv dataset, which was taken off [Kaggle](https://www.kaggle.com/stevepalley/2016uspresidentialvotebycounty/home)
   
