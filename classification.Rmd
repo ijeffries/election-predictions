@@ -1,10 +1,8 @@
 ---
 title: "Predicting 2016 Election Results in the USA"
-knit: (function(input_file, encoding) {
-  out_dir <- 'docs';
-  rmarkdown::render(input_file,
- encoding=encoding,
- output_file=file.path(dirname(input_file), out_dir, 'classification.html'))})
+author: "Ian Jeffries"
+date: "5/16/2019"
+output: html_document
 ---
 
 ```{r setup, include=FALSE}
