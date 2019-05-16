@@ -7,6 +7,7 @@
 2. [File Directory](https://github.com/ianjeffries/election-predictions#file-directory)
 3. [Language and Packages Used](https://github.com/ianjeffries/election-predictions#language-and-packages-used)
 4. [Credits](https://github.com/ianjeffries/election-predictions#credits)
+5. [License](https://github.com/ianjeffries/election-predictions#license)
 
 ## Summary 
 The following project accomplishes two goals:  
