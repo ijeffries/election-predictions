@@ -33,14 +33,11 @@ Three supervised machine learning models are used to predict election results ba
   d. voting_trends.png - Voting trends by top 5 normalized demographics
   
 3. [**classification**](https://github.com/ianjeffries/election-predictions/tree/master/classification) - contains classification files that predict election outcome based off demographics:  
-  a. classification.Rmd - R Markdown detailing the entire classification process, from data cleaning to model creation.
+  a. classification.Rmd - R Markdown detailing the entire classification process, from data cleaning to model creation.  
   b. classification.pdf - PDF that shows R code and the outputted results, for easy viewing.
-
-R Markdown document and PDF that shows code and the results, for easy viewing.
-  a. R Markdown detailing the entire classification process, from data cleaning to model creation. - contains R Ma
   
 4. [**association_rules**](https://github.com/ianjeffries/election-predictions/tree/master/association_rules) - contains association rules files:  
-  a. association_rules.Rmd - R Markdown to mine association rules that relate to demographics and voting preference using R.  
+  a. association_rules.Rmd - R Markdown to mine association rules that relate to demographics and voting preference.  
   b. association_rules.pdf - PDF that shows R code and the outputted results, for easy viewing.
 
 ## Language and Packages Used
