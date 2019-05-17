@@ -1,6 +1,8 @@
 # election-predictions
 
+<p align="center">
 <img src="https://github.com/ianjeffries/election-predictions/blob/master/images/voting_trends.png" alt="alt text" width="640" height="320">
+</p>
 
 ## Index 
 1. [Summary](https://github.com/ianjeffries/election-predictions#summary)
