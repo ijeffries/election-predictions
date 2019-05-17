@@ -42,7 +42,7 @@ Three supervised machine learning models are used to predict election results ba
   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;b. [classification.pdf](https://github.com/ianjeffries/election-predictions/blob/master/classification/classification.pdf) - PDF that shows R code and the outputted results, for easy viewing
   
 4. [**association_rules**](https://github.com/ianjeffries/election-predictions/tree/master/association_rules) - contains association rules files:  
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;a. [association_rules.Rmd](https://github.com/ianjeffries/election-predictions/blob/master/association_rules/association_rules.Rmd) - R Markdown to mine association rules that relate to demographics and voting preference  
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;a. [association_rules.Rmd](https://github.com/ianjeffries/election-predictions/blob/master/association_rules/association_rules.Rmd) - R Markdown to mine rules that relate to demographics and voting preference  
   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;b. [association_rules.pdf](https://github.com/ianjeffries/election-predictions/blob/master/association_rules/association_rules.pdf) - PDF that shows R code and the outputted results, for easy viewing
 
 ## Language and Packages Used
