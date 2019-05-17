@@ -11,8 +11,10 @@ output:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-The following R Markdown outlines the steps used by Ian Jeffries to mine interesting association rules based on demographics from the 2016 election results in the USA. This is an unsupervised machine learning problem, 
-and the steps used to clean the data are recreated from the classification problem done earlier in this project.
+The following R Markdown outlines the steps used by Ian Jeffries to mine interesting association rules 
+based on demographics from the 2016 election results in the USA. This is an unsupervised machine learning 
+problem, and the steps used to clean the data are recreated from the classification problem done earlier in 
+this project.
 
 ## Install necessary packages
 
@@ -264,17 +266,18 @@ for (i in 3:30) {
       "[0.00230554188007612, 1]"="0.0023_to_1"))
 }
 
-#drop first two columns to create association rules
+#drop county and state information
 association_data_bin <- association_data_bin[,-c(1,2)]
 
-#create matrix to store max bin distribution
+#create matrix to store max bin distribution (see if bins have equal percentages)
 binmax <- matrix(rep(0, 56), ncol = 2, dimnames = list(1:28, c("Demographic",
                                                                "Max_Bin_Percent")))
 binmax[ ,1] <- names(association_data_bin[,1:28])
 binmax <- as.data.frame(binmax, stringsAsFactors = FALSE)
 
-#calculate if an bins are skewed in one category
-for (i in 1:28) {
+#calculate if bins are skewed in one category 
+#should be 20% of values in each bin, since there are 5 bins
+for (i in 1:28) { 
   binmax2 <- (count(association_data_bin[,i]))
   binmax[i,2] <- round(max(binmax2$freq) / nrow(association_data_bin), 2) * 100
 }
@@ -283,12 +286,11 @@ for (i in 1:28) {
 binmax$Max_Bin_Percent <- as.numeric(as.character(binmax$Max_Bin_Percent))
 str(binmax)
 
-#create an threshold amount
+#create an threshold amount (don't want anything over 25%)
 binthresh <- binmax %>%
             filter(Max_Bin_Percent > 25)
-binthresh
 
-#plot the results
+#plot the results (highlight problem bins in red)
 theme_update(plot.title = element_text(hjust = 0.5))
 ggplot(as.data.frame(binmax), aes(x = Demographic, y = Max_Bin_Percent)) +
   geom_bar(stat = "identity", fill = "black") +
@@ -301,7 +303,7 @@ ggplot(as.data.frame(binmax), aes(x = Demographic, y = Max_Bin_Percent)) +
 ## Mine data for interesting association rules
 
 ```{r association rules}
-#create final dataset based on findings
+#remove bins that don't have 5 equal labels, will skew rules results
 final_assoc_data <- subset(association_data_bin, select = -c(Percent_Black_owned_firms, 
                                                              Percent_Asian_owned_firms, 
                                                              Percent_Hispanic_owned_firms,
@@ -309,6 +311,7 @@ final_assoc_data <- subset(association_data_bin, select = -c(Percent_Black_owned
                                                              Percent_Asian)) 
 
 #create rules using the apriori function for the republican party
+#played with many confidence and support parameters to get perfect balance
 rules1 <- apriori(final_assoc_data, parameter = list(minlen=2, maxlen=5, 
                                                      conf = .923, supp = .189),
                  appearance= list(rhs=c("Winner=Republican"),default="lhs"))
@@ -318,6 +321,7 @@ summary(rules1)
 inspect(rules1)
 
 #create rules using the apriori function for the democratic party
+#need much lower support, since fewer counties voted democratic
 rules2 <- apriori(final_assoc_data, parameter = list(minlen=2, maxlen=5, 
                                                      conf = .817, supp = .031),
                  appearance= list(rhs=c("Winner=Democrat"),default="lhs"))
@@ -326,7 +330,7 @@ rules2 <- apriori(final_assoc_data, parameter = list(minlen=2, maxlen=5,
 summary(rules2)
 inspect(rules2)
 
-#plot the rules
+#plot the rules to sees support, confidence, and lift
 plot(rules1, main = "Republican Association Rules") 
 plot(rules2, main = "Democratic Association Rules") 
 
@@ -336,3 +340,9 @@ plot(rules1, method="matrix", shading=c("support", "confidence"),
 plot(rules2, method="matrix", shading=c("support", "confidence"), 
      main = "Democratic Association Rules")
 ```
+
+## Conclusion
+
+In conclusion, using market basket analysis allowed for the mining of interesting rules that
+outline voting preference by demographics. A full write-up of the results can be found on 
+Ian Jeffries' github page. 
