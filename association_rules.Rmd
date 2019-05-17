@@ -2,7 +2,9 @@
 title: "Mining Association Rules Relating to Demographics and Voting Preference"
 author: "Ian Jeffries"
 date: "5/16/2019"
-output: html_document
+output:
+  pdf_document: default
+  html_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -148,7 +150,7 @@ association_data$Winner <- factor(association_data$Winner, labels = c("Republica
 
 The data needs to be separated into 5 equal bins to create a format for market basket analysis. 
 
-```{r binning-data, fig.height=6, fig.width=5, message=FALSE}
+```{r binning-data, fig.height=3, fig.width=5, message=FALSE}
 #create new variables to house our binning data
 association_data_bin <- association_data
 
@@ -294,12 +296,16 @@ final_assoc_data <- subset(association_data_bin, select = -c(Percent_Black_owned
 #create rules using the apriori function for the republican party
 rules1 <- apriori(final_assoc_data, parameter = list(minlen=2, maxlen=5, conf = .923, supp = .189),
                  appearance= list(rhs=c("Winner=Republican"),default="lhs"))
+
+#inspect the Republican rules
 summary(rules1)
-print(rules1)
+inspect(rules1)
 
 #create rules using the apriori function for the democratic party
 rules2 <- apriori(final_assoc_data, parameter = list(minlen=2, maxlen=5, conf = .817, supp = .031),
                  appearance= list(rhs=c("Winner=Democrat"),default="lhs"))
+
+#inspect the democratic rules
 summary(rules2)
 inspect(rules2)
 
@@ -307,6 +313,7 @@ inspect(rules2)
 plot(rules1, main = "Republican Association Rules") 
 plot(rules2, main = "Democratic Association Rules") 
 
+#plot shading matrix for rules
 plot(rules1, method="matrix", shading=c("support", "confidence"), main = "Republican Association Rules")
 plot(rules2, method="matrix", shading=c("support", "confidence"), main = "Democratic Association Rules")
 ```
