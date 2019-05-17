@@ -2,7 +2,9 @@
 title: "Predicting 2016 Election Results in the USA"
 author: "Ian Jeffries"
 date: "5/16/2019"
-output: html_document
+output:
+  pdf_document: default
+  html_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -20,8 +22,8 @@ The following code will install the packages used in the project:
 
 ```{r packages, message=FALSE, warning=FALSE}
 #list of packages used
-packages <- c("dplyr", "tidyr", "ggplot2", "class", "rpart", "rpart.plot", "neuralnet", "arules",
-              "plyr", "mltools", "arulesViz", "plotly", "RCurl")
+packages <- c("dplyr", "tidyr", "ggplot2", "class", "rpart", "rpart.plot", "neuralnet", 
+              "arules", "plyr", "mltools", "arulesViz", "plotly", "RCurl")
 
 #check to see if package is already installed, if not, install
 for(p in packages){
@@ -37,7 +39,9 @@ Import the data from my github page and explore.
 
 ```{r demographics}
 #import our county features dataset
-path <- "https://raw.githubusercontent.com/ianjeffries/election-predictions/master/data/county_facts.csv"
+path <- "https://raw.githubusercontent.com/ianjeffries/election-predictions/master/
+data/county_facts.csv"
+
 demographics <- read.csv(path, header=TRUE)
 
 #See the names of the columns
@@ -45,7 +49,8 @@ names(demographics)
 #See the structure of the dataset
 str(demographics)
 
-#find the state summary info and remove (want only counties, this dataset includes state summaries)
+#find the state summary info and remove 
+#(want only counties, this dataset includes state summaries)
 demographics <- demographics[-which(demographics$state_abbreviation == ""), ]
 ```
 
@@ -55,7 +60,9 @@ Add in the dictionary file to replace columm headers with readable values.
 
 ```{r dictionary}
 #pull in dictionary to get true names of the variables
-path <- "https://raw.githubusercontent.com/ianjeffries/election-predictions/master/data/county_facts_dictionary.csv"
+path <- "https://raw.githubusercontent.com/ianjeffries/election-predictions/master/
+data/county_facts_dictionary.csv"
+
 var_names <- read.csv(path, header = TRUE)
 
 #view variable names
@@ -69,7 +76,9 @@ democratic and republican candidates are of interest.
 
 ```{r 2016_Results}
 #add in the election results
-path <- "https://raw.githubusercontent.com/ianjeffries/election-predictions/master/data/pres16results.csv"
+path <- "https://raw.githubusercontent.com/ianjeffries/election-predictions/master/
+ata/pres16results.csv"
+
 election_results <- read.csv(path, header = TRUE)
 
 #see the names of the columns
@@ -83,7 +92,7 @@ election_results <- election_results[-c(2, 5, 8)]
 
 #filter by the republican and democratic candidates & remove null values
 ER_clean <- election_results %>%
-                      filter(cand %in% c("Donald Trump", "Hillary Clinton") & county != "<NA>")
+                filter(cand %in% c("Donald Trump", "Hillary Clinton") & county != "<NA>")
 
 #change to wide dataset to merge the election results with the demographics dataframe
 ER_clean <- spread(ER_clean, key = cand, value = votes)
@@ -99,14 +108,16 @@ Now that cleanup is complete, the two datasets can be joined.
 
 ```{r Joined_Data, warning=FALSE}
 #join our election results with the demographics table
-final_dataset <- left_join(demographics, select(ER_clean, Percent_Dem, Percent_Rep, st, county), 
+final_dataset <- left_join(demographics, select(ER_clean, Percent_Dem, 
+                                                Percent_Rep, st, county), 
                            by = c("area_name" = "county", "state_abbreviation" = "st"))
 
 #find number of counties with N/A election results
 print(paste0("Number of counties with null election results: ", 
              nrow(final_dataset[which(complete.cases(final_dataset) == FALSE), ])))
 
-#looks like these aren't counties (the majority) and the N is small enough I feel comfortable removing them
+#looks like these aren't counties (the majority) and 
+#the N is small enough I feel comfortable removing them
 final_dataset <- na.omit(final_dataset)
 ```
 
@@ -118,7 +129,7 @@ The data will also be normalized, with 0 or 1 values assigned to the target vari
 ```{r cleanup}
 #change any column in dataset based on % of the population to true percentage 
 #(basically already normalized between 0 and 1)
-final_dataset[,c(8:24, 28:29, 35, 41:46)] <- final_dataset[,c(8:24, 28:29, 35, 41:46)] / 100
+final_dataset[,c(8:24, 28:29, 35, 41:46)] <- final_dataset[,c(8:24, 28:29, 35, 41:46)]/100
 
 #drop clearly irrelevant values
 final_dataset <- final_dataset[ , -c(5:8, 38)]
