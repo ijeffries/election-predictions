@@ -22,23 +22,28 @@ Three supervised machine learning models are used to predict election results ba
 ## File Directory
 
 1. [**data**](https://github.com/ianjeffries/election-predictions/tree/master/data) - contains three data sets used in analysis (taken from kaggle, referenced in the credits):  
-  a. county_facts.csv - Demographic breakdown of each county  
-  b. county_facts_dictionary.csv - Dictionary to decode variable names in county_facts.csv  
-  c. pres16results.csv - Results of the 2016 election by county
+  a. [county_facts.csv](https://github.com/ianjeffries/election-predictions/blob/master/data/county_facts.csv) - Demographic breakdown of each county.  
+  b. [county_facts_dictionary.csv](https://github.com/ianjeffries/election-predictions/blob/master/data/county_facts_dictionary.csv) - Dictionary to decode variable names in county_facts.csv.  
+  c. [pres16results.csv](https://github.com/ianjeffries/election-predictions/blob/master/data/pres16results.csv) - Results of the 2016 election by county.
      
 2. [**images**](https://github.com/ianjeffries/election-predictions/tree/master/images) - contains vizualizations:  
-  a. decision_tree.png - Decision tree created from modelling process  
-  b. model_comparison.png - Comparison of 3 classification models used  
-  c. population_trends.png - Population size by voting preference  
-  d. voting_trends.png - Voting trends by top 5 normalized demographics
+  a. [decision_tree.png](https://github.com/ianjeffries/election-predictions/blob/master/images/decision_tree.png) - Decision tree created from modelling process.  
+  b. [model_comparison.png](https://github.com/ianjeffries/election-predictions/blob/master/images/model_comparison.png) - Comparison of 3 classification models used.  
+  c. [population_trends.png](https://github.com/ianjeffries/election-predictions/blob/master/images/population_trends.png) - Population size by voting preference.  
+  d. [voting_trends.png](https://github.com/ianjeffries/election-predictions/blob/master/images/voting_trends.png) - Voting trends by top 5 normalized demographics.  
+  e. [binning_comparison.png](https://github.com/ianjeffries/election-predictions/blob/master/images/binning_comparison.png) - Comparison of arules binning method.  
+  f. [democrat_arules.png](https://github.com/ianjeffries/election-predictions/blob/master/images/democrat_arules.png) - Scatterplot of democratic association rules by support and confidence.  
+  g. [republican_arules.png](https://github.com/ianjeffries/election-predictions/blob/master/images/republican_arules.png) - Scatterplot of republican association rules by support and confidence.  
+  h. [democrats_grid.png](https://github.com/ianjeffries/election-predictions/blob/master/images/democrat_grid.png) - Color grid of democratic association rules.  
+  i. [republican_grid.png](https://github.com/ianjeffries/election-predictions/blob/master/images/republican_grid.png) - Color grid of republican association rules. 
   
 3. [**classification**](https://github.com/ianjeffries/election-predictions/tree/master/classification) - contains classification files that predict election outcome based off demographics:  
-  a. classification.Rmd - R Markdown detailing the entire classification process, from data cleaning to model creation.  
-  b. classification.pdf - PDF that shows R code and the outputted results, for easy viewing.
+  a. [classification.Rmd](https://github.com/ianjeffries/election-predictions/blob/master/classification/classification.Rmd) - R Markdown detailing the entire classification process, from data cleaning to model creation  
+  b. [classification.pdf](https://github.com/ianjeffries/election-predictions/blob/master/classification/classification.pdf) - PDF that shows R code and the outputted results, for easy viewing
   
 4. [**association_rules**](https://github.com/ianjeffries/election-predictions/tree/master/association_rules) - contains association rules files:  
-  a. association_rules.Rmd - R Markdown to mine association rules that relate to demographics and voting preference.  
-  b. association_rules.pdf - PDF that shows R code and the outputted results, for easy viewing.
+  a. [association_rules.Rmd](https://github.com/ianjeffries/election-predictions/blob/master/association_rules/association_rules.Rmd) - R Markdown to mine association rules that relate to demographics and voting preference  
+  b. [association_rules.pdf](https://github.com/ianjeffries/election-predictions/blob/master/association_rules/association_rules.pdf) - PDF that shows R code and the outputted results, for easy viewing
 
 ## Language and Packages Used
 
@@ -62,8 +67,8 @@ for(p in packages){
 
 ## Credits
 
-1. Would like to thank Ben Hammer for the county_facts.csv and county_facts_dictionary.csv datasets, which were taken off [Kaggle](https://www.kaggle.com/benhamner/2016-us-election/home).
-2. Would like to thank Steve Palley for the pres16results.csv dataset, which was taken off [Kaggle](https://www.kaggle.com/stevepalley/2016uspresidentialvotebycounty/home).
+1. Would like to thank Ben Hammer for the county_facts.csv and county_facts_dictionary.csv datasets, which were taken off [Kaggle](https://www.kaggle.com/benhamner/2016-us-election/home)
+2. Would like to thank Steve Palley for the pres16results.csv dataset, which was taken off [Kaggle](https://www.kaggle.com/stevepalley/2016uspresidentialvotebycounty/home)
 
 ## License 
 
