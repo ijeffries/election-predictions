@@ -2,6 +2,8 @@
 
 ![alt text](https://github.com/ianjeffries/election-predictions/blob/master/images/voting_trends.png)
 
+<img src="https://github.com/ianjeffries/election-predictions/blob/master/images/voting_trends.png" alt="alt text" width="640" height="320">
+
 ## Index 
 1. [Summary](https://github.com/ianjeffries/election-predictions#summary)
 2. [File Directory](https://github.com/ianjeffries/election-predictions#file-directory)
