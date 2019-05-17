@@ -38,7 +38,7 @@ Three supervised machine learning models are used to predict election results ba
   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;i. [republican_grid.png](https://github.com/ianjeffries/election-predictions/blob/master/images/republican_grid.png) - Color grid of republican association rules. 
   
 3. [**classification**](https://github.com/ianjeffries/election-predictions/tree/master/classification) - contains classification files that predict election outcome based off demographics:  
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;a. [classification.Rmd](https://github.com/ianjeffries/election-predictions/blob/master/classification/classification.Rmd) - R Markdown detailing the entire classification process, from data cleaning to model creation  
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;a. [classification.Rmd](https://github.com/ianjeffries/election-predictions/blob/master/classification/classification.Rmd) - R Markdown detailing the classification process, from data cleaning to model creation  
   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;b. [classification.pdf](https://github.com/ianjeffries/election-predictions/blob/master/classification/classification.pdf) - PDF that shows R code and the outputted results, for easy viewing
   
 4. [**association_rules**](https://github.com/ianjeffries/election-predictions/tree/master/association_rules) - contains association rules files:  
